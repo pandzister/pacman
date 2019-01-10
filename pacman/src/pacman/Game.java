@@ -2,6 +2,7 @@ package pacman;
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -27,6 +28,15 @@ public class Game extends Canvas implements Runnable,KeyListener{
 	public static Level level;
 	public static SpriteSheet spritesheet;
 	
+	public static final int PAUSE_SCREEN = 0,GAME = 1;
+	public static int STATE = -1;
+	
+	public boolean isSpace = false;
+	
+	private int time = 0;
+	private int targetFrames = 45;
+	private boolean showText = true;
+	
 	public Game() {
 		Dimension dimension = new Dimension(Game.WIDTH,Game.HEIGHT);
 		setPreferredSize(dimension);
@@ -34,8 +44,8 @@ public class Game extends Canvas implements Runnable,KeyListener{
 		setMaximumSize(dimension);
 		
 		addKeyListener(this);
-		player = new Player(Game.WIDTH/2,Game.HEIGHT/2);
-		level = new Level("/map.png");
+		STATE = PAUSE_SCREEN;
+
 		spritesheet = new SpriteSheet("/pacmansheet.png");
 		
 		new Texture();
@@ -59,8 +69,26 @@ public class Game extends Canvas implements Runnable,KeyListener{
 	}
 	
 	private void tick() {
+		if(STATE == GAME) {
 		player.tick();
 		level.tick();
+		}else if(STATE == PAUSE_SCREEN) {
+			time++;
+			if(time == targetFrames) {
+				time = 0;
+				if(showText) {
+					showText = false;
+				}else {
+					showText = true;
+				}
+			}
+			if(isSpace) {
+				isSpace = false;
+				player = new Player(Game.WIDTH/2,Game.HEIGHT/2);
+				level = new Level("/map.png");
+				STATE = GAME;
+			}
+		}
 		
 	}
 	
@@ -74,8 +102,22 @@ public class Game extends Canvas implements Runnable,KeyListener{
 		Graphics g = bs.getDrawGraphics();
 		g.setColor(new Color(83,24,124));
 		g.fillRect(0, 0, Game.WIDTH, Game.HEIGHT);
-		player.render(g);
-		level.render(g);
+		if(STATE == GAME) {
+			player.render(g);
+			level.render(g);
+		}else if(STATE == PAUSE_SCREEN) {
+			int boxWidth = 480;
+			int boxHeight = 360;
+			int xx = Game.WIDTH / 2 - boxWidth/2;
+			int yy = Game.HEIGHT / 2 - boxHeight/2;
+			g.setColor(new Color(224,183,214));
+			g.fillRect(xx, yy, boxWidth, boxHeight);
+			
+			g.setColor(new Color(83,24,124));
+			g.setFont(new Font(Font.DIALOG,Font.BOLD,20));
+			if(showText) g.drawString("Press space to start new game!", xx+70, yy+190);
+				
+		}
 		g.dispose();
 		bs.show();
 		
@@ -134,10 +176,16 @@ public class Game extends Canvas implements Runnable,KeyListener{
 
 	@Override
 	public void keyPressed(KeyEvent e) {
+		if(STATE == GAME) {
 		if(e.getKeyCode() == KeyEvent.VK_RIGHT) player.right = true;
 		if(e.getKeyCode() == KeyEvent.VK_LEFT) player.left = true;
 		if(e.getKeyCode() == KeyEvent.VK_UP) player.up = true;
 		if(e.getKeyCode() == KeyEvent.VK_DOWN) player.down = true;
+		}else if(STATE == PAUSE_SCREEN) {
+			if(e.getKeyCode() == KeyEvent.VK_SPACE) {
+				isSpace = true;
+			}
+		}
 	}
 
 	@Override

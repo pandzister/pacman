@@ -70,6 +70,9 @@ public class Level {
 		for(int i = 0; i < apples.size(); i++) {
 			apples.get(i).render(g);
 		}
+		for(int i = 0; i < enemies.size(); i++) {
+			enemies.get(i).render(g);
+		}
 		
 	}
 

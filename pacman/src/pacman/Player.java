@@ -10,6 +10,7 @@ public class Player extends Rectangle{
 	public boolean right,left,up,down;
 
 	private int speed = 4;
+	
 
 	public Player(int x,int y) {
 		setBounds(x,y,32,32);
@@ -30,17 +31,20 @@ public class Player extends Rectangle{
 			}
 		}
 		
-		if(level.apples.size() ==0) {
-			//We win!
-			Game.player = new Player(0,0);
-			Game.level = new Level("/map.png");
-			return;
-		}
 		
 		for(int i = 0; i < Game.level.enemies.size(); i++) {
-			Enemy en = Game.level.enemies.get(i);
-					if(en.intersects(this)) System.exit(i);
+			if(this.intersects(Game.level.enemies.get(i))){
+				Game.STATE = Game.PAUSE_SCREEN;
+				return;
+			}
 		}
+		
+		if(Game.level.apples.size() == 0) {
+			Game.STATE = Game.PAUSE_SCREEN;
+			return;
+			
+		}
+		
 	}
 	
 	private boolean canMove(int nextx,int nexty) {
